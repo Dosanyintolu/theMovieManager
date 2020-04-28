@@ -19,13 +19,6 @@ extension UIViewController {
     func handleLogoutResponse(success: Bool, error: Error?) {
         DispatchQueue.main.async {
             self.dismiss(animated: true, completion: nil)
-            let VC = LoginViewController()
-            if case VC.emailTextField = VC.emailTextField{
-            VC.emailTextField.text = ""
-            }
-            if case VC.passwordTextField = VC.passwordTextField {
-                VC.passwordTextField.text = ""
-            }
         }
     }
 }
