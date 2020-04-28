@@ -107,6 +107,7 @@ class TMDBClient {
         let body = PostSession(requestToken: Auth.requestToken)
         do {
             request.httpBody = try JSONEncoder().encode(body)
+            completionHandler(true, nil)
         } catch {
             print(error.localizedDescription)
         }
@@ -116,10 +117,10 @@ class TMDBClient {
                 return
             }
             let decoder = JSONDecoder()
-            
             do {
                 let responseObject = try decoder.decode(SessionResponse.self, from: data)
                 Auth.sessionId = responseObject.sessionId
+                print(responseObject.success)
                 completionHandler(true, nil)
             } catch {
                 completionHandler(false, error)

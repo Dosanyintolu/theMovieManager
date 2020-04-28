@@ -20,8 +20,12 @@ extension UIViewController {
         DispatchQueue.main.async {
             self.dismiss(animated: true, completion: nil)
             let VC = LoginViewController()
+            if case VC.emailTextField = VC.emailTextField{
             VC.emailTextField.text = ""
-            VC.passwordTextField.text = ""
+            }
+            if case VC.passwordTextField = VC.passwordTextField {
+                VC.passwordTextField.text = ""
+            }
         }
     }
 }
