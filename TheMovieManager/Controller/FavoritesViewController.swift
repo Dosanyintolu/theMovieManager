@@ -17,6 +17,11 @@ class FavoritesViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        _ = TMDBClient.getFavorite(completionHandler: { (movie, error) in
+            MovieModel.favorites = movie
+            self.tableView.reloadData()
+        })
+        
     }
     
     override func viewWillAppear(_ animated: Bool) {
