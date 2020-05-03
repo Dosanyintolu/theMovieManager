@@ -11,6 +11,7 @@ import UIKit
 class FavoritesViewController: UIViewController {
     
     @IBOutlet weak var tableView: UITableView!
+    var movie: Movie!
     
     var selectedIndex = 0
     
@@ -55,6 +56,15 @@ extension FavoritesViewController: UITableViewDataSource, UITableViewDelegate {
         let movie = MovieModel.favorites[indexPath.row]
         
         cell.textLabel?.text = movie.title
+        TMDBClient.downloadPosterImage(posterPath: movie.posterPath ?? "") { (data, error) in
+            guard let data = data else {
+                return
+            }
+            
+            let image = UIImage(data: data)
+            cell.imageView?.image = image
+            cell.setNeedsLayout()
+        }
         
         return cell
     }

@@ -14,12 +14,15 @@ class WatchlistViewController: UIViewController {
     
     var selectedIndex = 0
     
+    var movie: Movie!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         _ = TMDBClient.getWatchlist() { movies, error in
             MovieModel.watchlist = movies
                 self.tableView.reloadData()
+            
         }
     }
     
@@ -35,7 +38,6 @@ class WatchlistViewController: UIViewController {
             detailVC.movie = MovieModel.watchlist[selectedIndex]
         }
     }
-    
 }
 
 extension WatchlistViewController: UITableViewDataSource, UITableViewDelegate {
@@ -54,6 +56,14 @@ extension WatchlistViewController: UITableViewDataSource, UITableViewDelegate {
         let movie = MovieModel.watchlist[indexPath.row]
         
         cell.textLabel?.text = movie.title
+        TMDBClient.downloadPosterImage(posterPath: movie.posterPath ?? "") { (data, error) in
+            guard let data = data else {
+                return
+            }
+            let image = UIImage(data: data)
+            cell.imageView?.image = image
+            cell.setNeedsLayout()
+        }
         
         return cell
     }

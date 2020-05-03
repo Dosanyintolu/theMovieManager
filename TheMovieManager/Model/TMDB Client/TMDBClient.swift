@@ -27,6 +27,7 @@ class TMDBClient {
         static let webLink = "https://www.themoviedb.org/authenticate/"
         static let webQuery = "?redirect_to=themoviemanager:authenticate"
         static let logoutLink = "/authentication/session"
+        static let session = "&session_id=\(Auth.sessionId)"
         
         case getWatchlist
         case getRequestToken
@@ -36,6 +37,9 @@ class TMDBClient {
         case logout
         case getFavorites
         case search(String)
+        case markWatchList
+        case markFavorite
+        case posterImageURL(String)
         
         var stringValue: String {
             switch self {
@@ -46,7 +50,10 @@ class TMDBClient {
             case .webAuth: return Endpoints.webLink + Auth.requestToken + Endpoints.webQuery
             case .logout: return Endpoints.base + Endpoints.logoutLink + Endpoints.apiKeyParam
             case .getFavorites: return Endpoints.base + "/account/\(Auth.accountId)/favorite/movies" + Endpoints.apiKeyParam + "&session_id=\(Auth.sessionId)"
-            case .search(let query): return Endpoints.base + "/search/movies" + Endpoints.apiKeyParam + "&query=\(query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")"
+            case .search(let query): return Endpoints.base + "/search/movie" + Endpoints.apiKeyParam + "&query=\(query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")"
+            case .markWatchList: return Endpoints.base + "/account/\(Auth.accountId)/watchlist" + Endpoints.apiKeyParam + Endpoints.session
+            case .markFavorite: return Endpoints.base + "/account/\(Auth.accountId)/favorite" + Endpoints.apiKeyParam + Endpoints.session
+            case .posterImageURL(let posterPath): return "https://image.tmdb.org/t/p/w500/" + posterPath
             }
         }
         
@@ -150,6 +157,41 @@ class TMDBClient {
         }
     }
     
+    class func markWatchList(movieId: Int, watchList: Bool, completionHandler: @escaping (Bool, Error?) -> Void ){
+        let body = MarkWatchlist(mediaType: MediaType.movie.rawValue, mediaId: movieId, watchlist: watchList)
+        taskPOSTRequest(url: Endpoints.markWatchList.url, body: body, repsonse: TMDBResponse.self) { (response, error) in
+            if let response = response {
+                completionHandler(response.statusCode == 1 || response.statusCode == 12 || response.statusCode == 13, nil)
+            } else {
+                completionHandler(false, error)
+            }
+        }
+    }
+    
+    class func markFavorite(movieId: Int, favoriteList: Bool, completionHandler: @escaping (Bool, Error?) -> Void){
+        let body = MarkFavorite(mediaType: MediaType.movie.rawValue, mediaId: movieId, favorite: favoriteList)
+        taskPOSTRequest(url: Endpoints.markFavorite.url, body: body, repsonse: TMDBResponse.self) { (response, error) in
+            if let response = response {
+                completionHandler(response.statusCode == 1 || response.statusCode == 12 || response.statusCode == 13, nil)
+            } else {
+            completionHandler(false, nil)
+            }
+        }
+    }
+    
+    class func downloadPosterImage(posterPath: String, completionHandler: @escaping (Data?, Error?) -> Void) {
+        let task = URLSession.shared.dataTask(with: Endpoints.posterImageURL(posterPath).url) { (data, response, error) in
+            guard let data = data else {
+                completionHandler(nil, error)
+                return
+            }
+            DispatchQueue.main.async {
+                completionHandler(data,nil)
+            }
+        }
+        task.resume()
+    }
+    
 class func taskGETRequest<ResponseType: Decodable>(url: URL, response: ResponseType.Type, completionHandler: @escaping (ResponseType?, Error?) -> Void ){
     let task = URLSession.shared.dataTask(with: url) { data, response, error in
             guard let data = data else {
@@ -163,7 +205,6 @@ class func taskGETRequest<ResponseType: Decodable>(url: URL, response: ResponseT
                 let responseObject = try decoder.decode(ResponseType.self, from: data)
                 DispatchQueue.main.async {
                     completionHandler(responseObject, nil)
-                    print(responseObject)
                 }
                 
             } catch {

@@ -297,6 +297,7 @@
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="Uig-FD-P2I"/>
                     </view>
+                    <navigationItem key="navigationItem" id="6zO-Xt-0bP"/>
                     <connections>
                         <outlet property="favoriteBarButtonItem" destination="hMm-5H-1Df" id="pkr-Iw-4FZ"/>
                         <outlet property="imageView" destination="Waw-f1-Pfh" id="4f5-YG-VOa"/>
